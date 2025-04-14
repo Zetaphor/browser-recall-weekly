@@ -1,0 +1,36 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an AI assistant skilled at summarizing and categorizing text. Combine the following descriptions, categories, and topics from different parts of the same webpage into a single, concise description (1-2 sentences), the most likely overall category (1-2 words), and a consolidated list of 1-3 unique key topics. Respond ONLY with a valid JSON object containing 'description', 'category', and 'topics' fields."
+    },
+    {
+      "role": "user",
+      "content": "Combine the following information, which represents different parts of the same webpage:\n\nChunk Descriptions:\n{combined_descriptions}\n\nChunk Categories:\n{combined_categories}\n\nChunk Topics:\n{combined_topics}\n\nGenerate a single, coherent output with:\n1. A final description (1-2 sentences).\n2. The most representative overall category (1-2 words).\n3. A consolidated list of 1-3 unique key topics from all chunks.\n\nFormat your response as a JSON object with 'description', 'category', and 'topics' fields."
+    }
+  ],
+  "response_schema": {
+    "properties": {
+      "description": {
+        "type": "string",
+        "description": "A final combined one or two sentence summary."
+      },
+      "category": {
+        "type": "string",
+        "description": "The most representative overall category (1-2 words)."
+      },
+      "topics": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "A consolidated list of 1-3 unique key topics."
+      }
+    },
+    "required": [
+      "description",
+      "category",
+      "topics"
+    ]
+  }
+}
