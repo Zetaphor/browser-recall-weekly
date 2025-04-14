@@ -1,0 +1,17 @@
+---
+description: Best practices to follow when editing any file
+globs: *
+---
+
+# Code Commenting Best Practices
+
+- Only add comments when it's not obvious what the code is doing.
+- Comments should explain why something is happening, not what is happening, the code should explain that.
+- Don't wrap functions in a comment block.
+- Use docstrings where applicable.
+- Don't add comments describing the changes you just made.
+
+# Code Addition Best Practices
+
+- Don't include extra code that was not requested, don't provide optional or alternative implemnentations. Choose one implementation only and use that.
+- Don't include commented out code. If I need something I will ask for it.
