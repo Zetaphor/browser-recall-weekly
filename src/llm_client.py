@@ -142,7 +142,6 @@ class LLMClient:
                             # The API should return valid JSON string in the content field
                             # when json_object or json_schema is requested
                             result = json.loads(content_str)
-                            log.info("Successfully parsed JSON response from LLM.")
                         except json.JSONDecodeError as json_err:
                             log.error(f"LLM response content is not valid JSON despite requesting {response_format.get('type')}.")
                             log.error(f"JSONDecodeError: {json_err}")

@@ -2,11 +2,11 @@
   "messages": [
     {
       "role": "system",
-      "content": "You are an AI assistant specialized in analyzing webpage content. Analyze the provided text and respond ONLY with a valid JSON object containing the requested field. Do not include any explanations or introductory text outside the JSON structure."
+      "content": "You are an AI assistant specialized in analyzing webpage content. Analyze the provided text and respond ONLY with a valid JSON object containing the requested fields. Do not include any explanations or introductory text outside the JSON structure."
     },
     {
       "role": "user",
-      "content": "Analyze the following webpage content and generate a concise, one or two sentence description summarizing its main points.\nPage Title: [Title]\nContent: [Text content]\n\nFormat your response as a JSON object with a single 'description' field. Do not include explanations."
+      "content": "Analyze the following webpage content:\nPage Title: [Title]\nContent: [Text content]\n\nGenerate the following:\n1. A concise, one or two sentence description summarizing its main points.\n2. A one or two word category for the page (e.g., 'Technology', 'News', 'Programming', 'Shopping').\n3. A list of 1 to 3 specific topics covered (e.g., ['AI models', 'Python', 'Web development']).\n\nFormat your response as a JSON object with 'description', 'category', and 'topics' fields. Do not include explanations."
     }
   ],
   "response_schema": {
@@ -14,10 +14,23 @@
       "description": {
         "type": "string",
         "description": "A one or two sentence summary of the page content."
+      },
+      "category": {
+        "type": "string",
+        "description": "A one or two word category for the page."
+      },
+      "topics": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "A list of 1 to 3 specific topics covered on the page."
       }
     },
     "required": [
-      "description"
+      "description",
+      "category",
+      "topics"
     ]
   }
 }
