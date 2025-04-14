@@ -33,3 +33,8 @@ Browser Recall is a Python application designed to analyze your web browsing his
     *   A JSON file with the extracted structured data (`*_extracted_data.json`).
     *   A Markdown file with the browsing summary (`*_browsing_summary.md`).
     *   An HTML report (`*_report.html`).
+
+
+## Example:
+
+![image](https://github.com/user-attachments/assets/31318833-826e-4987-8693-0f59571daab3)
