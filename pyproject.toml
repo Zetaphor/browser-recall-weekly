@@ -7,5 +7,6 @@ requires-python = "==3.10.16"
 dependencies = [
     "python-dotenv",
     "requests",
-    "loguru"
+    "loguru",
+    "wordcloud"
 ]
