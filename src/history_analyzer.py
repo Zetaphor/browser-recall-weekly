@@ -13,11 +13,11 @@ DEFAULT_MAX_CONTENT_LENGTH = 4000
 DEFAULT_CHUNK_OVERLAP = 200
 DEFAULT_DAYS_TO_FILTER = 7
 DEFAULT_OUTPUT_DIR = "analysis_results"
+SUMMARIZATION_PROMPT_PATH = 'prompts/summarization_analysis.json' # Added path for summarization prompt
 
 def analyze_history(
     db_path: str,
     prompt_path: str,
-    summarization_prompt_path: str, # Added new argument for summarization prompt
     llm_client: LLMClient,
     output_dir: str = DEFAULT_OUTPUT_DIR,
     days_to_filter: int = DEFAULT_DAYS_TO_FILTER,
@@ -31,7 +31,6 @@ def analyze_history(
     Args:
         db_path: Path to the SQLite history database.
         prompt_path: Path to the JSON file containing the analysis prompt template and schema.
-        summarization_prompt_path: Path to the JSON file for the summarization prompt.
         llm_client: An initialized LLMClient instance.
         output_dir: Directory to save the markdown analysis results.
         days_to_filter: How many past days of history to analyze.
@@ -59,9 +58,9 @@ def analyze_history(
         raise FileNotFoundError(f"Prompt file not found at {prompt_path}")
 
     # Added check for the new summarization prompt file
-    if not os.path.exists(summarization_prompt_path):
-        log.error(f"Summarization prompt file not found at {summarization_prompt_path}")
-        raise FileNotFoundError(f"Summarization prompt file not found at {summarization_prompt_path}")
+    if not os.path.exists(SUMMARIZATION_PROMPT_PATH):
+        log.error(f"Summarization prompt file not found at {SUMMARIZATION_PROMPT_PATH}")
+        raise FileNotFoundError(f"Summarization prompt file not found at {SUMMARIZATION_PROMPT_PATH}")
 
     try:
         with open(prompt_path, 'r') as f:
@@ -80,18 +79,18 @@ def analyze_history(
 
     # Load summarization prompt configuration
     try:
-        with open(summarization_prompt_path, 'r') as f:
+        with open(SUMMARIZATION_PROMPT_PATH, 'r') as f:
             summarization_config = json.load(f)
             summarization_messages_template = summarization_config.get("messages")
             summarization_response_schema = summarization_config.get("response_schema")
             if not summarization_messages_template or not summarization_response_schema:
-                log.error(f"'messages' or 'response_schema' missing in {summarization_prompt_path}")
-                raise ValueError(f"'messages' or 'response_schema' missing in {summarization_prompt_path}")
+                log.error(f"'messages' or 'response_schema' missing in {SUMMARIZATION_PROMPT_PATH}")
+                raise ValueError(f"'messages' or 'response_schema' missing in {SUMMARIZATION_PROMPT_PATH}")
     except json.JSONDecodeError as e:
-        log.error(f"Error decoding JSON from {summarization_prompt_path}: {e}")
+        log.error(f"Error decoding JSON from {SUMMARIZATION_PROMPT_PATH}: {e}")
         raise
     except Exception as e:
-        log.error(f"Error reading summarization prompt file {summarization_prompt_path}: {e}")
+        log.error(f"Error reading summarization prompt file {SUMMARIZATION_PROMPT_PATH}: {e}")
         raise
 
     # --- Generate Markdown Output Filename ---

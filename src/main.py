@@ -1,12 +1,11 @@
 import os
 from llm_client import LLMClient
-from logger import log # Import the configured logger
-from history_analyzer import analyze_history # Import the new function
+from logger import log
+from history_analyzer import analyze_history
 
 # --- Configuration ---
 DB_PATH = '/home/zetaphor/Code/browser-recall/history.db'
 PROMPT_PATH = 'prompts/page_analysis.json'
-SUMMARIZATION_PROMPT_PATH = 'prompts/summarization_analysis.json' # Added path for summarization prompt
 API_BASE_URL = "http://192.168.50.246:1234"
 API_KEY = "lmstudio"
 MODEL_NAME = "lmstudio-community/gemma-3-12b-it"
@@ -36,7 +35,6 @@ def main():
         analysis_output_file = analyze_history(
             db_path=DB_PATH,
             prompt_path=PROMPT_PATH,
-            summarization_prompt_path=SUMMARIZATION_PROMPT_PATH, # Pass the new path
             llm_client=llm_client,
             output_dir=OUTPUT_DIR,
             days_to_filter=DAYS_TO_FILTER,
