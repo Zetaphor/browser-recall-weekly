@@ -68,9 +68,15 @@ HTML_TEMPLATE = """
             background-color: #252526; /* Dark background for containers */
             width: 90%; /* Use percentage width for responsiveness */
             box-sizing: border-box;
+            /* Added min-height for consistency */
+            min-height: 500px;
+            display: flex; /* Added flex to center content */
+            flex-direction: column; /* Stack title and chart */
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
         }}
-        .chart-container {{ /* Specific max-width for bar chart if desired */
-             max-width: 1000px;
+        .chart-container {{ /* Specific max-width for chart */
+             max-width: 800px; /* Adjusted max-width for pie chart */
         }}
         .wordcloud-container img {{ /* Style for the word cloud image */
             max-width: 100%;
@@ -82,8 +88,10 @@ HTML_TEMPLATE = """
             border-radius: 5px; /* Slightly round corners */
         }}
 
-        #categoryBarChart {{ min-height: 500px; }}
-        /* Removed #wordCloudCanvas styles */
+        #categoryPieChart {{ /* Style for the pie chart div */
+            width: 100%;
+            height: 500px; /* Ensure div has height */
+         }}
 
         /* Plotly dark theme adjustments */
         .plotly .plot-container {{
@@ -117,8 +125,8 @@ HTML_TEMPLATE = """
 
     <div class="container">
         <div class="chart-container">
-            <h2>Category Counts</h2>
-            <div id="categoryBarChart"></div>
+            <h2>Category Distribution</h2>
+            <div id="categoryPieChart"></div>
         </div>
 
         <div class="wordcloud-container">
@@ -129,42 +137,44 @@ HTML_TEMPLATE = """
     </div>
 
     <script>
-        // --- Bar Chart (Plotly) ---
+        // --- Donut Chart (Plotly) ---
         try {{
-            const categoryData = {category_data_json};
-            const barChartLayout = {{
+            // Use the new placeholder for pie data
+            const pieChartData = {category_pie_data_json};
+            const pieTrace = [{{
+                labels: pieChartData.labels,
+                values: pieChartData.values,
+                type: 'pie',
+                hole: .4, // Use .4 for donut, 0 for pie
+                textinfo: 'percent', // Show percentage on slices
+                insidetextorientation: 'radial', // Orient text radially
+                marker: {{
+                    line: {{ color: '#333', width: 1 }} // Slightly darker line for contrast
+                    // Colors will use Plotly's default categorical palette which works well
+                }},
+                hoverinfo: 'label+percent+value', // Show details on hover
+                automargin: true
+            }}];
+
+            const pieLayout = {{
                 paper_bgcolor: '#252526', // Dark background for the chart paper
                 plot_bgcolor: '#252526',  // Dark background for the plot area
-                font: {{ color: '#d4d4d4' }}, // Light font color for titles/axes
-                margin: {{ l: 150, r: 40, t: 60, b: 40 }}, // Adjusted top margin for title
-                yaxis: {{
-                    automargin: true,
-                    gridcolor: '#444', // Darker grid lines
-                    linecolor: '#666', // Axis line color
-                    tickfont: {{ color: '#d4d4d4' }} // Ensure tick labels are light
+                font: {{ color: '#d4d4d4' }}, // Light font color for titles/axes/legend
+                showlegend: true,
+                legend: {{
+                    bgcolor: 'rgba(0,0,0,0)', // Transparent background
+                    font: {{ color: '#d4d4d4' }},
+                    // Adjust legend position if needed, e.g., x: 1, y: 0.5
                 }},
-                xaxis: {{
-                    gridcolor: '#444', // Darker grid lines
-                    linecolor: '#666', // Axis line color
-                    tickfont: {{ color: '#d4d4d4' }} // Ensure tick labels are light
-                }},
-                title: {{ // Ensure title color is light
-                    text: 'Category Counts', // Re-add title here if needed, or rely on H2
-                    font: {{ color: '#a3ffb4' }} // Use heading green (was #9cdcfe)
-                }},
-                height: Math.max(500, categoryData[0].y.length * 25)
-            }};
-            // Update marker color for better visibility on dark background
-            categoryData[0].marker = {{
-                color: 'rgba(80, 200, 120, 0.8)', // Medium green bars (was rgba(79, 193, 255, 0.8))
-                line: {{ color: 'rgba(80, 200, 120, 1.0)', width: 1 }} // Medium green outline (was rgba(79, 193, 255, 1.0))
+                margin: {{ l: 40, r: 40, t: 40, b: 40 }}, // Adjusted margins, reduced top margin
             }};
 
-            const barChartConfig = {{ responsive: true }};
-            Plotly.newPlot('categoryBarChart', categoryData, barChartLayout, barChartConfig);
+            const pieChartConfig = {{ responsive: true }};
+            Plotly.newPlot('categoryPieChart', pieTrace, pieLayout, pieChartConfig);
+
         }} catch (error) {{
-            console.error("Error rendering Bar Chart:", error);
-            document.getElementById('categoryBarChart').innerText = 'Error rendering Bar Chart.';
+            console.error("Error rendering Pie Chart:", error);
+            document.getElementById('categoryPieChart').innerText = 'Error rendering Pie Chart.';
         }}
 
         // --- Removed Word Cloud JavaScript ---
@@ -176,7 +186,7 @@ HTML_TEMPLATE = """
 
 def generate_html_report(json_data_path: str, output_dir: str) -> str:
     """
-    Generates an HTML report with a bar chart and a word cloud image
+    Generates an HTML report with a donut chart and a word cloud image
     from extracted data.
 
     Args:
@@ -286,21 +296,20 @@ def generate_html_report(json_data_path: str, output_dir: str) -> str:
         log.warning("No topic data found or topics merged to empty, skipping word cloud image generation.")
         wordcloud_image_filename = "" # Clear filename
 
-    # --- Prepare Data for Plotly Bar Chart ---
+    # --- Prepare Data for Plotly Donut Chart ---
     sorted_categories = sorted(categories.items(), key=lambda item: item[1], reverse=True)
     category_labels = [item[0] for item in sorted_categories]
     category_values = [item[1] for item in sorted_categories]
-    plotly_category_data = [{
-        "y": category_labels, "x": category_values, "type": "bar", "orientation": "h",
-        # Marker color will be updated in the JavaScript below for dark mode
-    }]
-    category_data_json = json.dumps(plotly_category_data) # Keep original data structure
+    # Create a simple dictionary for pie chart data
+    pie_data = {"labels": category_labels, "values": category_values}
+    category_pie_data_json = json.dumps(pie_data) # Convert dict to JSON string
 
     # --- Generate HTML Content ---
     try:
         html_content = HTML_TEMPLATE.format(
             report_date=report_date,
-            category_data_json=category_data_json,
+            # Pass the pie chart data JSON to the template
+            category_pie_data_json=category_pie_data_json,
             # Pass only the filename for the img src (relative path)
             wordcloud_image_filename=wordcloud_image_filename
         )
