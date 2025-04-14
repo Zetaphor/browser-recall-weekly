@@ -1,11 +1,10 @@
 import os
 import json
 import re
-from collections import Counter
+from datetime import datetime
 from logger import log
 from llm_client import LLMClient
 
-# Constants
 MAX_SAMPLE_DESCRIPTIONS = 10
 TOP_N_CATEGORIES = 5
 TOP_N_TOPICS = 10
@@ -35,11 +34,8 @@ def _format_statistics(stats_dict: dict, top_n: int) -> str:
     """Formats the top N items from a statistics dictionary."""
     if not stats_dict:
         return "N/A"
-    # Sort by count descending
     sorted_items = sorted(stats_dict.items(), key=lambda item: item[1], reverse=True)
-    # Take top N
     top_items = sorted_items[:top_n]
-    # Format as "Item (Count)"
     return "\n".join([f"- {item} ({count})" for item, count in top_items])
 
 

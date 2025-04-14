@@ -4,9 +4,8 @@ import re
 from datetime import datetime
 from logger import log
 from wordcloud import WordCloud
-import markdown # Import the markdown library
+import markdown
 
-# Basic HTML template - Updated with dark mode CSS and summary section
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -260,23 +259,15 @@ def generate_html_report(json_data_path: str, output_dir: str, summary_file_path
     categories = data.get("categories", {})
     original_topics = data.get("topics", {}) # Rename original dict
 
-    # --- Deduplicate Topics (Case-Insensitive) ---
     log.info("Deduplicating topics (case-insensitive)...")
-    topics = {} # This will hold the merged topics
+    topics = {}
     for topic, count in original_topics.items():
-        normalized_topic = topic.lower() # Normalize to lowercase
+        normalized_topic = topic.lower()
         # Use title case for the final key for better readability in the cloud
         final_topic_key = topic.title()
         if normalized_topic in topics:
-            # If normalized form exists, add count to the existing entry
-            # We need to find the correctly capitalized key already in the dict
-            # This assumes the first encountered capitalization is preferred,
-            # or we can just use title case consistently. Let's use title case.
-            # Remove the old key if it exists with different capitalization
-            # This part is tricky if we want to preserve *one* original capitalization.
-            # Simpler approach: always use title case as the key.
             existing_key_found = False
-            for key in list(topics.keys()): # Iterate over a copy of keys
+            for key in list(topics.keys()):
                  if key.lower() == normalized_topic:
                      topics[key] += count
                      existing_key_found = True
@@ -328,11 +319,8 @@ def generate_html_report(json_data_path: str, output_dir: str, summary_file_path
             log.info(f"Word cloud image saved successfully.")
         except Exception as e:
             log.exception("Failed to generate or save word cloud image.")
-            # Decide how to handle this - maybe skip the image in HTML?
-            # For now, we'll continue and the HTML might show a broken image link.
             wordcloud_image_filename = "" # Clear filename so img src is empty
     else:
-        # This log message might now trigger if original_topics existed but merged to empty (unlikely)
         log.warning("No topic data found or topics merged to empty, skipping word cloud image generation.")
         wordcloud_image_filename = "" # Clear filename
 
@@ -340,7 +328,6 @@ def generate_html_report(json_data_path: str, output_dir: str, summary_file_path
     sorted_categories = sorted(categories.items(), key=lambda item: item[1], reverse=True)
     category_labels = [item[0] for item in sorted_categories]
     category_values = [item[1] for item in sorted_categories]
-    # Create a simple dictionary for pie chart data
     pie_data = {"labels": category_labels, "values": category_values}
     category_pie_data_json = json.dumps(pie_data) # Convert dict to JSON string
 
@@ -350,21 +337,17 @@ def generate_html_report(json_data_path: str, output_dir: str, summary_file_path
         try:
             with open(summary_file_path, 'r', encoding='utf-8') as f_summary:
                 summary_markdown = f_summary.read()
-            # Convert markdown to HTML
             browsing_summary_html = markdown.markdown(summary_markdown, extensions=['fenced_code', 'tables'])
             log.info("Successfully read and converted browsing summary markdown to HTML.")
         except FileNotFoundError:
             log.warning(f"Summary file specified but not found: {summary_file_path}")
-            # Keep the default message
         except Exception as e:
             log.exception(f"Error reading or converting summary file {summary_file_path}: {e}")
             browsing_summary_html = f"<p><i>Error processing browsing summary file: {e}</i></p>"
     elif summary_file_path:
          log.warning(f"Summary file path provided but file does not exist: {summary_file_path}")
-         # Keep the default message if path provided but file missing
     else:
         log.info("No summary file path provided, skipping summary inclusion.")
-        # Keep the default message
 
     # --- Generate HTML Content ---
     try:
