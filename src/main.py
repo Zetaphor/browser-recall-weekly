@@ -3,11 +3,13 @@ from llm_client import LLMClient
 from logger import log
 from history_analyzer import analyze_history
 from data_extractor import extract_data_from_analysis
+from summary_generator import generate_browsing_summary
 from report_generator import generate_html_report
 
 # --- Configuration ---
 DB_PATH = '/home/zetaphor/Code/browser-recall/history.db'
 PROMPT_PATH = 'prompts/page_analysis.json'
+SUMMARY_PROMPT_PATH = 'prompts/browsing_summary.json'
 API_BASE_URL = "http://192.168.50.246:1234"
 API_KEY = "lmstudio"
 MODEL_NAME = "lmstudio-community/gemma-3-12b-it"
@@ -24,6 +26,7 @@ def main():
     log.info("Starting main application.")
     analysis_output_file = None # Initialize variable
     extracted_data_file = None # Initialize variable
+    summary_file = None # Initialize variable for the new summary file
 
     # --- Initialize LLM Client ---
     try:
@@ -80,13 +83,47 @@ def main():
     #     log.warning(f"Skipping data extraction step because history analysis file '{analysis_output_file}' was not found or not generated.")
 
 
-    # --- Step 3: Generate HTML Report ---
+    # --- Step 3: Generate Browsing Summary ---
+    # This step requires both the raw analysis and the extracted data
+    if analysis_output_file and os.path.exists(analysis_output_file) and \
+       extracted_data_file and os.path.exists(extracted_data_file):
+        try:
+            log.info("Initiating browsing summary generation step...")
+            summary_file = generate_browsing_summary(
+                markdown_file_path=analysis_output_file,
+                json_data_path=extracted_data_file,
+                prompt_path=SUMMARY_PROMPT_PATH, # Use the new prompt path
+                llm_client=llm_client,
+                output_dir=OUTPUT_DIR
+            )
+            if summary_file:
+                log.info(f"Browsing summary generation completed. Summary saved to: {summary_file}")
+            else:
+                log.warning("Browsing summary generation failed or returned no content.")
+                # Decide if you want to stop or continue
+        except FileNotFoundError as e:
+            log.error(f"Browsing summary generation error: {e}")
+            # Decide if you want to stop or continue
+        except Exception as e:
+            log.exception("An error occurred during the browsing summary generation step.")
+            # Decide if you want to stop or continue
+    else:
+        missing_files = []
+        if not (analysis_output_file and os.path.exists(analysis_output_file)):
+            missing_files.append(f"raw analysis file ('{analysis_output_file}')")
+        if not (extracted_data_file and os.path.exists(extracted_data_file)):
+            missing_files.append(f"extracted data file ('{extracted_data_file}')")
+        log.warning(f"Skipping browsing summary generation because required input file(s) were not found or not generated: {', '.join(missing_files)}.")
+
+
+    # --- Step 4: Generate HTML Report --- (Renumbered from Step 3)
     if extracted_data_file and os.path.exists(extracted_data_file): # Check if data file exists
         try:
             log.info("Initiating HTML report generation step...")
             html_report_file = generate_html_report(
                 json_data_path=extracted_data_file,
-                output_dir=OUTPUT_DIR
+                output_dir=OUTPUT_DIR,
+                summary_file_path=summary_file # Pass the summary file path (can be None)
             )
             log.info(f"HTML report generation completed. Report saved to: {html_report_file}")
         except FileNotFoundError as e:

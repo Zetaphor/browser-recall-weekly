@@ -8,5 +8,7 @@ dependencies = [
     "python-dotenv",
     "requests",
     "loguru",
-    "wordcloud"
+    "wordcloud",
+    "matplotlib",
+    "markdown"
 ]

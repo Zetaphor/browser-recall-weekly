@@ -4,8 +4,9 @@ import re
 from datetime import datetime
 from logger import log
 from wordcloud import WordCloud
+import markdown # Import the markdown library
 
-# Basic HTML template - Updated with dark mode CSS
+# Basic HTML template - Updated with dark mode CSS and summary section
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -117,11 +118,47 @@ HTML_TEMPLATE = """
          .plotly .xaxislayer-above .domain, .plotly .yaxislayer-above .domain {{
              stroke: #666 !important; /* Axis line color */
          }}
+        .summary-container {{ /* Styles for the summary section */
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            background-color: #252526;
+            width: 90%;
+            max-width: 900px; /* Allow summary to be wider */
+            box-sizing: border-box;
+            margin-top: 30px; /* Add some space above the summary */
+        }}
+        .summary-container h2 {{ /* Style summary heading */
+            margin-top: 0;
+            border-bottom: 1px solid #555; /* Slightly lighter border */
+            padding-bottom: 10px;
+        }}
+        .summary-container p {{ /* Style paragraphs within summary */
+            margin-bottom: 1em;
+        }}
+        .summary-container ul {{ /* Style lists within summary */
+             padding-left: 20px;
+        }}
+        .summary-container li {{ /* Style list items */
+             margin-bottom: 0.5em;
+        }}
 
     </style>
 </head>
 <body>
     <h1>Analysis Report - {report_date}</h1>
+
+    <!-- Add the Browsing Summary Section -->
+    <div class="container">
+        <div class="summary-container">
+            <h2>Browsing Activity Summary</h2>
+            {browsing_summary_html}
+        </div>
+    </div>
+    <!-- End Browsing Summary Section -->
+
 
     <div class="container">
         <div class="chart-container">
@@ -184,14 +221,15 @@ HTML_TEMPLATE = """
 </html>
 """
 
-def generate_html_report(json_data_path: str, output_dir: str) -> str:
+def generate_html_report(json_data_path: str, output_dir: str, summary_file_path: str | None = None) -> str:
     """
-    Generates an HTML report with a donut chart and a word cloud image
+    Generates an HTML report with a browsing summary, donut chart, and word cloud image
     from extracted data.
 
     Args:
         json_data_path: Path to the input JSON data file (_extracted_data.json).
         output_dir: Directory to save the generated HTML report and image.
+        summary_file_path: Optional path to the browsing summary markdown file.
 
     Returns:
         The path to the generated HTML file.
@@ -202,6 +240,8 @@ def generate_html_report(json_data_path: str, output_dir: str) -> str:
         Exception: For other unexpected errors during processing.
     """
     log.info(f"Starting HTML report generation from: {json_data_path}")
+    if summary_file_path:
+        log.info(f"Including summary from: {summary_file_path}")
 
     if not os.path.exists(json_data_path):
         log.error(f"JSON data file not found at {json_data_path}")
@@ -304,14 +344,35 @@ def generate_html_report(json_data_path: str, output_dir: str) -> str:
     pie_data = {"labels": category_labels, "values": category_values}
     category_pie_data_json = json.dumps(pie_data) # Convert dict to JSON string
 
+    # --- Read and Convert Browsing Summary ---
+    browsing_summary_html = "<p><i>Browsing summary could not be generated or found.</i></p>" # Default content
+    if summary_file_path and os.path.exists(summary_file_path):
+        try:
+            with open(summary_file_path, 'r', encoding='utf-8') as f_summary:
+                summary_markdown = f_summary.read()
+            # Convert markdown to HTML
+            browsing_summary_html = markdown.markdown(summary_markdown, extensions=['fenced_code', 'tables'])
+            log.info("Successfully read and converted browsing summary markdown to HTML.")
+        except FileNotFoundError:
+            log.warning(f"Summary file specified but not found: {summary_file_path}")
+            # Keep the default message
+        except Exception as e:
+            log.exception(f"Error reading or converting summary file {summary_file_path}: {e}")
+            browsing_summary_html = f"<p><i>Error processing browsing summary file: {e}</i></p>"
+    elif summary_file_path:
+         log.warning(f"Summary file path provided but file does not exist: {summary_file_path}")
+         # Keep the default message if path provided but file missing
+    else:
+        log.info("No summary file path provided, skipping summary inclusion.")
+        # Keep the default message
+
     # --- Generate HTML Content ---
     try:
         html_content = HTML_TEMPLATE.format(
             report_date=report_date,
-            # Pass the pie chart data JSON to the template
             category_pie_data_json=category_pie_data_json,
-            # Pass only the filename for the img src (relative path)
-            wordcloud_image_filename=wordcloud_image_filename
+            wordcloud_image_filename=wordcloud_image_filename,
+            browsing_summary_html=browsing_summary_html # Add the summary HTML
         )
 
         # --- Write to HTML File ---
