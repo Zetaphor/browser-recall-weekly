@@ -294,10 +294,11 @@ def generate_html_report(json_data_path: str, output_dir: str, summary_file_path
         log.warning("Could not extract date from JSON filename, using current date.")
         report_date = datetime.now().strftime('%Y-%m-%d')
 
+    run_output_dir = os.path.join(output_dir, report_date)  # Use same date-based subfolder
     html_filename = f"{report_date}_analysis_report.html"
-    html_filepath = os.path.join(output_dir, html_filename)
-    wordcloud_image_filename = f"{report_date}_wordcloud.png" # Image filename
-    wordcloud_image_filepath = os.path.join(output_dir, wordcloud_image_filename) # Full image path
+    html_filepath = os.path.join(run_output_dir, html_filename)
+    wordcloud_image_filename = f"{report_date}_wordcloud.png"  # Image filename
+    wordcloud_image_filepath = os.path.join(run_output_dir, wordcloud_image_filename)  # Full image path
 
     log.info(f"HTML report will be saved to: {html_filepath}")
     log.info(f"Word cloud image will be saved to: {wordcloud_image_filepath}")
@@ -359,7 +360,7 @@ def generate_html_report(json_data_path: str, output_dir: str, summary_file_path
         )
 
         # --- Write to HTML File ---
-        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(run_output_dir, exist_ok=True)
         with open(html_filepath, 'w', encoding='utf-8') as html_file:
             html_file.write(html_content)
 

@@ -153,10 +153,11 @@ def generate_browsing_summary(
             log.warning("Could not extract date from JSON filename for summary, using current date.")
             date_str = datetime.now().strftime('%Y-%m-%d')
 
+        run_output_dir = os.path.join(output_dir, date_str)  # Use same date-based subfolder
         summary_filename = f"{date_str}_browsing_summary.md"
-        summary_filepath = os.path.join(output_dir, summary_filename)
+        summary_filepath = os.path.join(run_output_dir, summary_filename)
 
-        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(run_output_dir, exist_ok=True)
         with open(summary_filepath, 'w', encoding='utf-8') as f:
             f.write(summary_text)
 

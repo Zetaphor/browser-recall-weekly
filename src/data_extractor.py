@@ -64,7 +64,8 @@ def extract_data_from_analysis(markdown_file_path: str, output_dir: str) -> str:
             log.warning("Could not extract date from filename, using current date.")
             date_str = datetime.now().strftime('%Y-%m-%d')
 
-        json_filename = os.path.join(output_dir, f"{date_str}_extracted_data.json")
+        run_output_dir = os.path.join(output_dir, date_str)  # Use same date-based subfolder
+        json_filename = os.path.join(run_output_dir, f"{date_str}_extracted_data.json")
         log.info(f"Extracted data will be saved to: {json_filename}")
 
         # --- Prepare JSON Data ---
@@ -74,7 +75,7 @@ def extract_data_from_analysis(markdown_file_path: str, output_dir: str) -> str:
         }
 
         # --- Write to JSON File ---
-        os.makedirs(output_dir, exist_ok=True) # Ensure output directory exists
+        os.makedirs(run_output_dir, exist_ok=True)  # Ensure output directory exists
         with open(json_filename, 'w', encoding='utf-8') as json_file:
             json.dump(output_data, json_file, indent=4, ensure_ascii=False)
 

@@ -94,9 +94,11 @@ def analyze_history(
         raise
 
     # --- Generate Markdown Output Filename ---
-    os.makedirs(output_dir, exist_ok=True) # Ensure the output directory exists
     today_date_str = datetime.now().strftime('%Y-%m-%d')
-    markdown_filename = os.path.join(output_dir, f"{today_date_str}_raw_analysis.md")
+    run_output_dir = os.path.join(output_dir, today_date_str)  # Create date-specific subfolder
+    os.makedirs(run_output_dir, exist_ok=True)  # Ensure the date-specific output directory exists
+
+    markdown_filename = os.path.join(run_output_dir, f"{today_date_str}_raw_analysis.md")
     log.info(f"Markdown output will be saved to: {markdown_filename}")
     # Clear the file if it exists to start fresh for the day
     if os.path.exists(markdown_filename):
