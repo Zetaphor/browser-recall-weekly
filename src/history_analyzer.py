@@ -116,9 +116,9 @@ def analyze_history(
         date_threshold = datetime.now() - timedelta(days=days_to_filter)
         date_threshold_str = date_threshold.strftime('%Y-%m-%d %H:%M:%S')
 
-        log.info(f"Selecting records created since {date_threshold_str}...")
+        log.info(f"Selecting records updated since {date_threshold_str}...")
 
-        query = "SELECT id, url, title, content FROM history WHERE created >= ?"
+        query = "SELECT id, url, title, content FROM history WHERE updated >= ?"
         params = (date_threshold_str,)
         cursor.execute(query, params)
 
