@@ -122,6 +122,12 @@ def analyze_history(
 
         query = "SELECT id, url, title, content FROM history WHERE updated >= ?"
         params = (date_threshold_str,)
+
+        # Add detailed query logging
+        log.info(f"Executing SQL query: {query}")
+        log.info(f"With parameters: {params}")
+        log.info("Full query would be: " + query.replace('?', f"'{date_threshold_str}'"))
+
         cursor.execute(query, params)
 
         history_records = cursor.fetchall()
