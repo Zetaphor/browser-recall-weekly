@@ -14,6 +14,7 @@ DEFAULT_CHUNK_OVERLAP = 200
 DEFAULT_DAYS_TO_FILTER = 7
 DEFAULT_OUTPUT_DIR = "analysis_results"
 SUMMARIZATION_PROMPT_PATH = 'prompts/summarization_analysis.json' # Added path for summarization prompt
+MAX_CHUNKS_PER_RECORD = 12  # Maximum number of chunks to analyze per record
 
 def analyze_history(
     db_path: str,
@@ -161,15 +162,21 @@ def analyze_history(
             if len(full_content) > max_content_length:
                 log.info(f"  Record ID: {record_id} - Content length ({len(full_content)}) exceeds limit ({max_content_length}). Chunking...")
                 start = 0
-                while start < len(full_content):
+                chunks_created = 0
+                while start < len(full_content) and chunks_created < MAX_CHUNKS_PER_RECORD:
                     end = start + max_content_length
                     content_chunks.append(full_content[start:end])
+                    chunks_created += 1
                     next_start = end - chunk_overlap
                     if next_start <= start:
                          next_start = start + max_content_length
                     start = next_start
                     if start >= len(full_content):
                         break
+
+                if start < len(full_content):
+                    log.warning(f"  Record ID: {record_id} - Reached maximum chunk limit ({MAX_CHUNKS_PER_RECORD}). {len(full_content) - start} characters of content will not be analyzed.")
+
                 log.info(f"  Record ID: {record_id} - Split content into {len(content_chunks)} chunks.")
             else:
                 content_chunks.append(full_content)
