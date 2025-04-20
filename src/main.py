@@ -13,7 +13,7 @@ API_BASE_URL = "http://192.168.50.246:1234"
 API_KEY = "lmstudio"
 MODEL_NAME = "lmstudio-community/gemma-3-12b-it"
 OUTPUT_DIR = "analysis_results"
-DAYS_TO_FILTER = 7 # How many days of history to process
+DAYS_TO_FILTER = 5 # How many days of history to process
 MAX_CONTENT_LENGTH = 4000 # Max characters per chunk for LLM
 CHUNK_OVERLAP = 200       # Overlap between chunks
 
